@@ -37,8 +37,6 @@ class KickerRoutes {
 		call_user_func_array($callback, array($routeBuilder));
 
 		if (count($existing_routes) > 0) {
-			self::$original_routes = $existing_routes;
-
 			foreach ($existing_routes as $to => $from) {
 				if (in_array($to, $reservedRoutes)) {
 					continue;
@@ -104,7 +102,7 @@ class KickerRoutes {
 	 */
 	public static function url($name, $values = array(), $method = null) {
 		if (is_null($method)) {
-			(isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : 'UNKNOWN';
+			$method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : 'UNKNOWN';
 		}
 
 		if (isset(self::$names[strtoupper($method)][$name])) {
