@@ -1,193 +1,282 @@
 <?php
 
 class RouteBuilder {
-	/**
-	 * Routes
-	 * A Compiled list of routes
-	 *
-	 * @access protected
-	 * @var array
-	 */
-	protected $routes = array();
+    /**
+     * Routes
+     * An array of routes
+     *
+     * @access protected
+     * @var array
+     */
+    protected $routes = array();
 
-	/**
-	 * Names
-	 * Lets have the ability to name our routes
-	 *
-	 * @access protected
-	 * @var array
-	 */
-	protected $names = array();
+    /**
+     * Verbs
+     * A list of used/available HTTP/CLI
+     * verbs
+     *
+     * @access protected
+     * @var array
+     */
+    protected $verbs = array(
+        'GET',
+        'POST',
+        'PUT',
+        'DELETE',
+        'PATCH',
+        'HEAD',
+        'OPTIONS',
+        'CLI',
+    );
 
-	/**
-	 * Verbs
-	 * A list of available http verbs
-	 *
-	 * @access protected
-	 * @var array
-	 */
-	protected $verbs = array();
+    /**
+     * Generic Routes
+     * This routes are the normal CI style routes
+     *
+     * @access protected
+     * @var array
+     */
+    protected $genericRoutes = array(
+    );
 
-	/**
-	 * Collections
-	 * Collections are a group of verbs
-	 *
-	 * @access protected
-	 * @var array
-	 */
-	protected $collections = array();
+    /**
+     * Verb Collections
+     * A list of "fake" verbs and the collection
+     * of real http verbs that are used
+     *
+     * @access protected
+     * @var array
+     */
+    protected $verbCollections = array(
+    );
 
-	/**
-	 * Class Construct
-	 * Setup of some basic stuff
-	 *
-	 * @access public
-	 */
-	public function __construct() {
-		$this->verbs = array(
-			'GET',
-			'POST',
-			'PUT',
-			'DELETE',
-			'PATCH',
-			'HEAD',
-			'OPTIONS',
-		);
-	}
+    /**
+     * Get Routes
+     * Returns the routes array
+     *
+     * @access public
+     * @return array
+     */
+    public function getRoutes() {
+        return $this->routes;
+    }
 
-	/**
-	 * Get Routes
-	 * Returns the routes array
-	 *
-	 * @access public
-	 * @return array
-	 */
-	public function getRoutes() {
-		return $this->routes;
-	}
+    /**
+     * Set Routes
+     * This should never be used but it will
+     * allow you to set a predefined route array
+     *
+     * @access public
+     * @param RouteBuilder
+     */
+    public function setRoutes($routes) {
+        $this->routes = $routes;
 
-	/**
-	 * Get Names
-	 * Returns the named routes
-	 *
-	 * @access public
-	 * @return array
-	 */
-	public function getNames() {
-		return $this->names;
-	}
+        return $this;
+    }
 
-	/**
-	 * Verbs
-	 * Returns the listed verbs
-	 *
-	 * @access public
-	 * @return array
-	 */
-	public function getVerbs() {
-		return $this->verbs;
-	}
+    /**
+     * Get Verbs
+     * Returns the verbs list
+     *
+     * @access public
+     * @return array
+     */
+    public function getVerbs() {
+        return $this->verbs;
+    }
 
-	/**
-	 * Route
-	 * Define a generic route
-	 *
-	 * @access public
-	 * @param  string $method
-	 * @param  string $to
-	 * @param  string $from
-	 *
-	 * @return RouteBuilder
-	 */
-	public function route($verb, $to, $from, $name = null) {
-		if (!in_array(strtoupper($verb), $this->verbs)) {
-			$this->verbs[] = strtoupper($verb);
-		}
+    /**
+     * Set Verbs
+     * Set the verbs list to something
+     * very custom
+     *
+     * @access public
+     * @param array $verbs
+     * @return RouteBuilder
+     */
+    public function setVerbs($verbs) {
+        $this->verbs = $verbs;
 
-		$this->routes[strtoupper($verb)][$to] = $from;
+        return $this;
+    }
 
-		if (!is_null($name)) {
-			$this->names[strtoupper($verb)][$name] = $to;
-		}
+    /**
+     * Add Verb
+     * Add a verb to the verbs list
+     *
+     * @access public
+     * @param string $verb
+     * @return RouteBuilder
+     */
+    public function addVerb($verb) {
+        $verb = strtoupper($verb);
 
-		return $this;
-	}
+        if (!in_array($verb, $this->verbs)) {
+            $this->verbs[] = $verb;
+        }
 
-	/**
-	 * All Route
-	 * Defines a route for all listed verbs
-	 *
-	 * @access public
-	 * @param string $to
-	 * @param string $from
-	 *
-	 * @return RouteBuilder
-	 */
-	public function ALL($to, $from, $name = null) {
-		foreach ($this->verbs as $verb) {
-			$this->route($verb, $to, $from, $name);
-		}
+        return $this;
+    }
 
-		return $this;
-	}
+    /**
+     * Get Verb Collections
+     * Returns all the verb collections
+     *
+     * @access public
+     * @return array
+     */
+    public function getVerbCollections() {
+        return $this->verbCollections;
+    }
 
-	/**
-	 * Verb Collections
-	 * Alias a collection of verbs togther
-	 *
-	 * @access public
-	 * @param string $name
-	 * @param array  $verbs
-	 *
-	 * @return RouteBuilder
-	 */
-	public function addCollection($name, $verbs = array()) {
-		$this->collections[$name] = $verbs;
+    /**
+     * Add Verb Collection
+     * Allows a developer to add a verb collection
+     *
+     * @acces public
+     * @param string $name
+     * @param array $verbs
+     * @return RouteBuilder
+     */
+    public function addVerbCollection($name, $verbs) {
+        if (in_array(strtoupper($name), $this->verbs)) {
+            throw new \ErrorException('Verb collections cannot use a HTTP verb as a name.');
+            exit;
+        }
 
-		return $this;
-	}
+        $this->verbCollections[$name] = $verbs;
 
-	/**
-	 * Collection
-	 * Send a route to a verb collection
-	 *
-	 * @access public
-	 * @param  string $col
-	 * @param  string $to
-	 * @param  string $from
-	 * @param  string $name
-	 *
-	 * @return RouteBuilder
-	 */
-	public function collection($col, $to, $from, $name = null) {
-		if (isset($this->collections[$col])) {
-			foreach ($this->collections[$col] as $verb) {
-				$this->route($verb, $to, $from, $name);
-			}
-		}
+        return $this;
+    }
 
-		return $this;
-	}
+    /**
+     * Execute a verb Collection
+     * This allows a developer to execute a verb collection
+     *
+     * @access public
+     * @param  string $collection
+     * @param  string $to
+     * @param  string $from
+     * @param  string $name
+     * @param  string|array $groups
+     * @return RouteBuilder
+     */
+    public function executeVerbCollection($collection, $to, $from, $name = null, $groups = null) {
+        if (isset($this->verbCollections[$collection])) {
+            foreach ($this->verbCollections[$collection] as $verb) {
+                $this->route($verb, $to, $from, $name, $groups);
+            }
+        }
 
-	/**
-	 * Magic Method: __call
-	 * Under the hood magic method... it allows us to
-	 * make it feel like there are a boat load of methods in this
-	 * class when in fact there aren't
-	 *
-	 * @access public
-	 * @param  string $method
-	 * @param  array  $arguments
-	 */
-	public function __call($method, $arguments = array()) {
-		array_unshift($arguments, $method);
+        return $this;
+    }
 
-		if (isset($this->collections[$method])) {
-			call_user_func_array(array($this, 'collection'), $arguments);
-		} else {
-			call_user_func_array(array($this, 'route'), $arguments);
-		}
+    /**
+     * Generic Routes
+     * Generic routes is the way KickerRoutes
+     * handles real CI routes
+     *
+     * @access public
+     * @param  string $to
+     * @param  string $from
+     * @return RouteBuilder
+     */
+    public function genericRoute($to, $from) {
+        $this->genericRoutes[$to] = $from;
 
-		return $this;
-	}
+        return $this;
+    }
+
+    /**
+     * Get Generic Routes
+     * Returns an array of all generic routes
+     *
+     * @access public
+     * @return array
+     */
+    public function getGenericRoutes() {
+        return $this->genericRoutes;
+    }
+
+    /**
+     * Route
+     * The basic command to create a route
+     *
+     * @access public
+     * @param  string $verb
+     * @param  string $to
+     * @param  string $from
+     * @param  string $name
+     * @param  string|array $groups
+     * @return RouteBuilder
+     */
+    public function route($verb, $to, $from, $name = null, $groups = null) {
+        if (is_string($groups)) {
+            $x = $groups;
+            unset($groups);
+            $groups[] = $x;
+            unset($x);
+        } elseif (is_null($groups)) {
+            $groups = array();
+        } elseif (!is_array($groups)) {
+            throw new \ErrorException('The groups parameter must be of datatype string or array.');
+            exit;
+        }
+
+        if (!empty($verb)) {
+            $verb = strtoupper($verb);
+            $this->addVerb($verb);
+        }
+
+        $this->routes[] = array(
+            'VERB' => $verb,
+            'TO' => $to,
+            'FROM' => $from,
+            'NAME' => $name,
+            'GROUPS' => $groups,
+        );
+
+        return $this;
+    }
+
+    /**
+     * Any
+     * This allows a route to be used for any http verb
+     *
+     * @access public
+     * @param  string $to
+     * @param  string $from
+     * @param  string $name
+     * @param  string|array $groups
+     * @return RouteBuilder
+     */
+    public function any($to, $from, $name = null, $groups = null) {
+        foreach ($this->verbs as $verb) {
+            $this->route($verb, $to, $from, $name, $groups);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Magic Method: __call
+     * Under the hood magic method... it allows us to
+     * make it feel like there are a boat load of methods in this
+     * class when in fact there aren't
+     *
+     * @access public
+     * @param  string $method
+     * @param  array  $arguments
+     */
+    public function __call($method, $arguments = array()) {
+        array_unshift($arguments, $method);
+        if (in_array($method, array_keys($this->verbCollections))) {
+            call_user_func_array(array($this, 'executeVerbCollection'), $arguments);
+        } else {
+            call_user_func_array(array($this, 'route'), $arguments);
+        }
+
+        return $this;
+    }
 }
