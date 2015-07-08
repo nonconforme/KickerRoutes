@@ -103,7 +103,6 @@ class KickerRoutes {
             }
         }
 
-        return self::$namedRoutes;
         return array_merge($return_routes, self::$genericRoutes);
     }
 
